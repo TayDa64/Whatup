@@ -7,6 +7,7 @@ import Environment from './Environment';
 import LoadingScreen from './LoadingScreen';
 import SimpleRoom from './SimpleRoom';
 import PostFX from '../../systems/postprocessing/EffectComposer';
+import ToneMappingController from '../../systems/postprocessing/ToneMappingController';
 
 export default function GameScene() {
   return (
@@ -41,6 +42,7 @@ export default function GameScene() {
         />
         <Stats />
         <PostFX />
+        <ToneMappingController />
       </Canvas>
     </>
   );

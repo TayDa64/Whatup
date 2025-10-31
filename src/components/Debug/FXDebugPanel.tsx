@@ -22,7 +22,7 @@ const sectionTitleStyle: React.CSSProperties = { margin: '10px 0 6px', fontWeigh
 
 export default function FXDebugPanel() {
   const [visible, setVisible] = useState<boolean>(true);
-  const { enabled, setEnabled, bloom, setBloom, vignette, setVignette } = useEffectsStore();
+  const { enabled, setEnabled, bloom, setBloom, vignette, setVignette, toneMapping, setToneMapping, exposure, setExposure, applyPreset } = useEffectsStore();
 
   // Keyboard toggle (F9)
   useEffect(() => {
@@ -63,6 +63,23 @@ export default function FXDebugPanel() {
       <div style={rowStyle}>
         <label style={labelStyle}>Enabled</label>
         <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
+      </div>
+
+      <div style={sectionTitleStyle}>Tone Mapping</div>
+      <div style={rowStyle}>
+        <label style={labelStyle}>Operator</label>
+        <select value={toneMapping} onChange={(e) => setToneMapping(e.target.value as any)} style={{ flex: 1 }}>
+          <option value="None">None</option>
+          <option value="Linear">Linear</option>
+          <option value="Reinhard">Reinhard</option>
+          <option value="Cineon">Cineon</option>
+          <option value="ACES">ACES</option>
+        </select>
+      </div>
+      <div style={rowStyle}>
+        <label style={labelStyle}>Exposure</label>
+        <input type="range" min={0.1} max={2} step={0.01} value={exposure} onChange={(e) => setExposure(Number(e.target.value))} style={{ flex: 1 }} />
+        <span>{exposure.toFixed(2)}</span>
       </div>
 
       <div style={sectionTitleStyle}>Bloom</div>
@@ -143,6 +160,18 @@ export default function FXDebugPanel() {
           style={{ flex: 1 }}
         />
         <span>{vignette.opacity.toFixed(2)}</span>
+      </div>
+
+      <div style={sectionTitleStyle}>Presets</div>
+      <div style={rowStyle}>
+        <label style={labelStyle}>Apply</label>
+        <select defaultValue="" onChange={(e) => { const v = e.target.value as any; if (v) applyPreset(v); }} style={{ flex: 1 }}>
+          <option value="" disabled>Select preset...</option>
+          <option value="Cinematic">Cinematic</option>
+          <option value="Neon">Neon</option>
+          <option value="LowKey">LowKey</option>
+          <option value="Reset">Reset</option>
+        </select>
       </div>
     </div>
   );
