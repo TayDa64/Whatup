@@ -1,0 +1,385 @@
+name: YOLO Supervisor - Phase Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+  issues: write
+
+jobs:
+  identify-phase:
+    name: Identify Phase from PR
+    runs-on: ubuntu-latest
+    outputs:
+      phase: ${{ steps.detect.outputs.phase }}
+      agent: ${{ steps.detect.outputs.agent }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Detect Phase
+        id: detect
+        run: |
+          BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
+          echo "Branch: $BRANCH_NAME"
+          
+          if [[ "$BRANCH_NAME" =~ phase-?([0-9]) ]]; then
+            PHASE="${BASH_REMATCH[1]}"
+            echo "phase=$PHASE" >> $GITHUB_OUTPUT
+            
+            case $PHASE in
+              1) echo "agent=Foundation_Agent" >> $GITHUB_OUTPUT ;;
+              2) echo "agent=Assets_Agent" >> $GITHUB_OUTPUT ;;
+              3) echo "agent=PostFX_Agent" >> $GITHUB_OUTPUT ;;
+              4) echo "agent=Physics_Agent" >> $GITHUB_OUTPUT ;;
+              5) echo "agent=AI_Agent" >> $GITHUB_OUTPUT ;;
+              6) echo "agent=OAuth_Agent" >> $GITHUB_OUTPUT ;;
+              *) echo "agent=Unknown_Agent" >> $GITHUB_OUTPUT ;;
+            esac
+          else
+            echo "phase=unknown" >> $GITHUB_OUTPUT
+            echo "agent=Unknown_Agent" >> $GITHUB_OUTPUT
+          fi
+
+  validate-phase:
+    name: Validate Phase Implementation
+    runs-on: ubuntu-latest
+    needs: identify-phase
+    if: needs.identify-phase.outputs.phase != 'unknown'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: TypeScript Check
+        id: typescript
+        run: |
+          npx tsc --noEmit 2>&1 | tee typescript-errors.log
+          if [ ${PIPESTATUS[0]} -eq 0 ]; then
+            echo "status=✅ Pass" >> $GITHUB_OUTPUT
+            echo "errors=0" >> $GITHUB_OUTPUT
+          else
+            ERROR_COUNT=$(wc -l < typescript-errors.log)
+            echo "status=❌ Fail" >> $GITHUB_OUTPUT
+            echo "errors=$ERROR_COUNT" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Build Check
+        id: build
+        run: |
+          if npm run build 2>&1 | tee build.log; then
+            echo "status=✅ Pass" >> $GITHUB_OUTPUT
+            BUNDLE_SIZE=$(du -sh dist | cut -f1)
+            echo "size=$BUNDLE_SIZE" >> $GITHUB_OUTPUT
+          else
+            echo "status=❌ Fail" >> $GITHUB_OUTPUT
+            echo "size=N/A" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Lint Check
+        id: lint
+        continue-on-error: true
+        run: |
+          if npm run lint 2>&1 | tee lint.log; then
+            echo "status=✅ Pass" >> $GITHUB_OUTPUT
+          else
+            WARNING_COUNT=$(grep -c "warning" lint.log || echo "0")
+            echo "status=⚠️ Warnings ($WARNING_COUNT)" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Check Phase Spec Compliance
+        id: spec-check
+        run: |
+          PHASE=${{ needs.identify-phase.outputs.phase }}
+          SPEC_FILE="docs/PHASE_${PHASE}_SPEC.md"
+          
+          if [ ! -f "$SPEC_FILE" ]; then
+            echo "status=⚠️ Spec not found" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Check if required files from spec exist
+          echo "Checking required files for Phase $PHASE..."
+          MISSING_FILES=0
+          
+          case $PHASE in
+            1)
+              FILES=("src/components/Scene/GameScene.tsx" "src/components/HUD/HUD.tsx" "src/stores/gameStore.ts")
+              ;;
+            2)
+              FILES=("src/systems/assets/AssetLoader.ts" "src/hooks/useGLTF.ts" "src/stores/assetStore.ts")
+              ;;
+            3)
+              FILES=("src/systems/postprocessing/EffectComposer.tsx" "src/stores/effectsStore.ts")
+              ;;
+            *)
+              FILES=()
+              ;;
+          esac
+          
+          for file in "${FILES[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "Missing: $file"
+              MISSING_FILES=$((MISSING_FILES + 1))
+            fi
+          done
+          
+          if [ $MISSING_FILES -eq 0 ]; then
+            echo "status=✅ All required files present" >> $GITHUB_OUTPUT
+          else
+            echo "status=⚠️ Missing $MISSING_FILES files" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Check Previous Phase Integrity
+        id: regression-check
+        if: needs.identify-phase.outputs.phase != '1'
+        run: |
+          PHASE=${{ needs.identify-phase.outputs.phase }}
+          echo "Checking that Phase $((PHASE - 1)) functionality is preserved..."
+          
+          # Check that previous phase files weren't deleted
+          PREV_PHASE=$((PHASE - 1))
+          DELETED_CRITICAL=0
+          
+          case $PREV_PHASE in
+            1)
+              CRITICAL_FILES=("src/components/Scene/GameScene.tsx" "src/components/HUD/HUD.tsx")
+              ;;
+            2)
+              CRITICAL_FILES=("src/systems/assets/AssetLoader.ts" "src/components/Scene/Character.tsx")
+              ;;
+            *)
+              CRITICAL_FILES=()
+              ;;
+          esac
+          
+          for file in "${CRITICAL_FILES[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "❌ Critical file deleted: $file"
+              DELETED_CRITICAL=$((DELETED_CRITICAL + 1))
+            fi
+          done
+          
+          if [ $DELETED_CRITICAL -eq 0 ]; then
+            echo "status=✅ Previous phase intact" >> $GITHUB_OUTPUT
+          else
+            echo "status=❌ $DELETED_CRITICAL critical files missing" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+      
+      - name: Performance Check
+        id: perf-check
+        if: success()
+        run: |
+          PHASE=${{ needs.identify-phase.outputs.phase }}
+          BUNDLE_SIZE=$(du -sh dist 2>/dev/null | cut -f1 || echo "N/A")
+          
+          echo "Bundle size: $BUNDLE_SIZE"
+          echo "size=$BUNDLE_SIZE" >> $GITHUB_OUTPUT
+          
+          # Phase-specific targets
+          case $PHASE in
+            1) echo "target=60fps baseline" >> $GITHUB_OUTPUT ;;
+            2) echo "target=50+ fps with assets" >> $GITHUB_OUTPUT ;;
+            3) echo "target=45+ fps with effects" >> $GITHUB_OUTPUT ;;
+            *) echo "target=45+ fps minimum" >> $GITHUB_OUTPUT ;;
+          esac
+      
+      - name: Update Agent Notes
+        if: always()
+        run: |
+          PHASE=${{ needs.identify-phase.outputs.phase }}
+          AGENT=${{ needs.identify-phase.outputs.agent }}
+          TIMESTAMP=$(date +'%Y-%m-%d %H:%M')
+          
+          cat >> AGENT_NOTES.md << EOF
+          
+          ### [$TIMESTAMP] Phase $PHASE - $AGENT (CI Check)
+          
+          **Type:** Automated Validation
+          
+          **Results:**
+          - TypeScript: ${{ steps.typescript.outputs.status }}
+          - Build: ${{ steps.build.outputs.status }} (Size: ${{ steps.build.outputs.size }})
+          - Lint: ${{ steps.lint.outputs.status }}
+          - Spec Compliance: ${{ steps.spec-check.outputs.status }}
+          - Regression Check: ${{ steps.regression-check.outputs.status }}
+          - Bundle Size: ${{ steps.perf-check.outputs.size }}
+          
+          **Performance Target:** ${{ steps.perf-check.outputs.target }}
+          
+          ---
+          EOF
+      
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const phase = '${{ needs.identify-phase.outputs.phase }}';
+            const agent = '${{ needs.identify-phase.outputs.agent }}';
+            const tsStatus = '${{ steps.typescript.outputs.status }}';
+            const buildStatus = '${{ steps.build.outputs.status }}';
+            const lintStatus = '${{ steps.lint.outputs.status }}';
+            const specStatus = '${{ steps.spec-check.outputs.status }}';
+            const regressionStatus = '${{ steps.regression-check.outputs.status }}' || 'N/A (Phase 1)';
+            const bundleSize = '${{ steps.perf-check.outputs.size }}';
+            const perfTarget = '${{ steps.perf-check.outputs.target }}';
+            
+            const allPassed = tsStatus.includes('✅') && buildStatus.includes('✅');
+            const header = allPassed ? '## ✅ YOLO Supervisor: Phase Validation Passed' : '## ⚠️ YOLO Supervisor: Issues Detected';
+            
+            const body = `${header}
+            
+            **Phase ${phase} - ${agent}**
+            
+            ### Validation Results
+            
+            | Check | Status |
+            |-------|--------|
+            | TypeScript | ${tsStatus} |
+            | Build | ${buildStatus} |
+            | Lint | ${lintStatus} |
+            | Spec Compliance | ${specStatus} |
+            | Regression Check | ${regressionStatus} |
+            
+            ### Performance Metrics
+            - **Bundle Size:** ${bundleSize}
+            - **Target:** ${perfTarget}
+            
+            ### Next Steps
+            ${allPassed ? `
+            ✅ **All automated checks passed!**
+            
+            Manual review required for:
+            - [ ] Visual inspection (FPS, rendering quality)
+            - [ ] Feature testing against spec checklist
+            - [ ] Integration with previous phases
+            - [ ] Documentation updates
+            ` : `
+            ⚠️ **Please address the issues above before proceeding.**
+            
+            Check the action logs for detailed error messages.
+            Update \`AGENT_NOTES.md\` if you need supervisor guidance.
+            `}
+            
+            ---
+            *Automated by YOLO Supervisor GitHub Action*
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+      
+      - name: Set Status Check
+        if: always()
+        run: |
+          if [[ "${{ steps.typescript.outputs.status }}" == *"✅"* ]] && [[ "${{ steps.build.outputs.status }}" == *"✅"* ]]; then
+            echo "All critical checks passed"
+            exit 0
+          else
+            echo "Critical checks failed"
+            exit 1
+          fi
+
+  guide-agent:
+    name: Provide Agent Guidance
+    runs-on: ubuntu-latest
+    needs: [identify-phase, validate-phase]
+    if: failure() && github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Analyze Issues and Provide Guidance
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const phase = '${{ needs.identify-phase.outputs.phase }}';
+            const agent = '${{ needs.identify-phase.outputs.agent }}';
+            
+            const guidance = {
+              '1': {
+                common_issues: [
+                  'TypeScript errors in Three.js types - Install @types/three',
+                  'Ink.js import errors - Ensure inkjs is installed',
+                  'Canvas not rendering - Check WebGL support in test environment',
+                ],
+                spec: 'docs/PHASE_1_SPEC.md',
+                troubleshooting: 'Check "Common Issues & Solutions" section in spec'
+              },
+              '2': {
+                common_issues: [
+                  'GLTF loader errors - Verify three-stdlib is installed',
+                  'Model not appearing - Check file paths in public/models/',
+                  'Loading screen stuck - Verify asset paths are correct',
+                ],
+                spec: 'docs/PHASE_2_SPEC.md',
+                troubleshooting: 'Review AssetLoader implementation and error handling'
+              },
+              '3': {
+                common_issues: [
+                  'Post-processing not visible - Check EffectComposer integration',
+                  'Performance drop - Reduce effect resolution or disable expensive effects',
+                  'Black screen - Verify render pass order',
+                ],
+                spec: 'docs/PHASE_3_SPEC.md',
+                troubleshooting: 'Use debug panel to isolate problematic effects'
+              }
+            };
+            
+            const phaseGuide = guidance[phase];
+            if (!phaseGuide) return;
+            
+            const body = `## 🤖 YOLO Supervisor Guidance
+            
+            **Agent:** ${agent}
+            **Phase:** ${phase}
+            
+            ### Common Issues for This Phase
+            ${phaseGuide.common_issues.map(issue => `- ${issue}`).join('\n')}
+            
+            ### Resources
+            - 📋 **Spec:** \`${phaseGuide.spec}\`
+            - 🔧 **Troubleshooting:** ${phaseGuide.troubleshooting}
+            
+            ### Recommended Actions
+            1. Review the phase spec's validation checklist
+            2. Check build logs for specific error messages
+            3. Verify all dependencies are installed
+            4. Test locally with \`npm run dev\`
+            5. Update \`AGENT_NOTES.md\` if blocked
+            
+            Need help? Update \`AGENT_NOTES.md\` with your specific blocker.
+            
+            ---
+            *Automated guidance from YOLO Supervisor*
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
