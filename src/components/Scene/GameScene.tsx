@@ -6,6 +6,7 @@ import Character from './Character';
 import Environment from './Environment';
 import LoadingScreen from './LoadingScreen';
 import SimpleRoom from './SimpleRoom';
+import PostFX from '../../systems/postprocessing/EffectComposer';
 
 export default function GameScene() {
   return (
@@ -39,6 +40,7 @@ export default function GameScene() {
           far={10}
         />
         <Stats />
+        <PostFX />
       </Canvas>
     </>
   );
