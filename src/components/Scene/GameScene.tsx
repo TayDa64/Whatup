@@ -3,9 +3,10 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stats, ContactShadows } from '@react-three/drei';
 import Lighting from './Lighting';
 import Character from './Character';
-import Environment from './Environment';
+// import Environment from './Environment';
 import LoadingScreen from './LoadingScreen';
-import SimpleRoom from './SimpleRoom';
+// import SimpleRoom from './SimpleRoom';
+import BarRoom from './BarRoom';
 import PostFX from '../../systems/postprocessing/EffectComposer';
 import ToneMappingController from '../../systems/postprocessing/ToneMappingController';
 import PerformanceGuard from '../../systems/postprocessing/PerformanceGuard';
@@ -24,8 +25,9 @@ export default function GameScene() {
         <Lighting />
 
         <Suspense fallback={null}>
-          <SimpleRoom />
-          <Environment position={[0, 0, 0]} />
+          {/* Replace simple room with a richer procedural bar interior */}
+          <BarRoom />
+          {/* Keep character; skip external environment GLB for now */}
           <Character position={[0, 0, 0]} scale={1} />
         </Suspense>
 
