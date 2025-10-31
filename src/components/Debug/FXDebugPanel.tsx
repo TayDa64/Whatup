@@ -24,7 +24,7 @@ const sectionTitleStyle: React.CSSProperties = { margin: '10px 0 6px', fontWeigh
 export default function FXDebugPanel() {
   const [visible, setVisible] = useState<boolean>(true);
   const { enabled, setEnabled, bloom, setBloom, vignette, setVignette, toneMapping, setToneMapping, exposure, setExposure, applyPreset, perf, setPerf } = useEffectsStore();
-  const { useProceduralEnv, setUseProceduralEnv } = useSceneStore();
+  const { useProceduralEnv, envScale, setUseProceduralEnv, setEnvScale } = useSceneStore();
 
   // Keyboard toggle (F9)
   useEffect(() => {
@@ -202,6 +202,11 @@ export default function FXDebugPanel() {
       <div style={rowStyle}>
         <label style={labelStyle}>Procedural Env</label>
         <input type="checkbox" checked={useProceduralEnv} onChange={(e) => setUseProceduralEnv(e.target.checked)} />
+      </div>
+      <div style={rowStyle}>
+        <label style={labelStyle}>Env Scale</label>
+        <input type="range" min={0.5} max={2} step={0.01} value={envScale} onChange={(e) => setEnvScale(Number(e.target.value))} style={{ flex: 1 }} />
+        <span>{envScale.toFixed(2)}x</span>
       </div>
     </div>
   );

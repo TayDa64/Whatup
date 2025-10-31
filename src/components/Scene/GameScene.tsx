@@ -15,6 +15,7 @@ import { useSceneStore } from '../../stores/sceneStore';
 
 export default function GameScene() {
   const useProceduralEnv = useSceneStore((s) => s.useProceduralEnv);
+  const envScale = useSceneStore((s) => s.envScale);
   return (
     <>
       <LoadingScreen />
@@ -28,7 +29,7 @@ export default function GameScene() {
         <Lighting />
 
         <Suspense fallback={null}>
-          {useProceduralEnv ? <BarRoom /> : <Environment position={[0, 0, 0]} />}
+          {useProceduralEnv ? <BarRoom /> : <Environment position={[0, 0, 0]} scale={envScale} />}
           <Character position={[0, 0, 0]} scale={1} />
         </Suspense>
 

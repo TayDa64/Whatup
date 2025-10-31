@@ -8,11 +8,13 @@ type GroupType = THREE.Group;
 interface EnvironmentProps {
   position?: [number, number, number];
   rotation?: [number, number, number];
+  scale?: number | [number, number, number];
 }
 
 export default function Environment({
   position = [0, 0, 0],
   rotation = [0, 0, 0],
+  scale = 1,
 }: EnvironmentProps) {
   const assetDefinition = ASSETS.find((asset) => asset.id === 'environment');
   const gltf = assetDefinition ? useGLTF(assetDefinition) : null;
@@ -35,7 +37,7 @@ export default function Environment({
   }
 
   return (
-    <group ref={groupRef} position={position} rotation={rotation}>
+    <group ref={groupRef} position={position} rotation={rotation} scale={scale as any}>
       <primitive object={gltf.scene.clone()} />
     </group>
   );
