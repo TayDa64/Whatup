@@ -1,0 +1,94 @@
+.hud-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 100;
+  font-family: 'Courier New', monospace;
+}
+
+.dialogue-box {
+  background: rgba(10, 10, 20, 0.9);
+  border: 2px solid #ff6b35;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 20px auto;
+  max-width: 800px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.dialogue-speaker {
+  color: #ff6b35;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.dialogue-text {
+  color: #e0e0e0;
+  font-size: 18px;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.dialogue-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.choice-button {
+  background: rgba(255, 107, 53, 0.1);
+  border: 2px solid #ff6b35;
+  border-radius: 8px;
+  padding: 12px 20px;
+  color: #ff6b35;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+  pointer-events: auto;
+}
+
+.choice-button:hover {
+  background: rgba(255, 107, 53, 0.3);
+  border-color: #ffaa00;
+  color: #ffaa00;
+  transform: translateX(5px);
+}
+
+.choice-button:active {
+  transform: scale(0.98);
+}
+
+.choice-number {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background: #ff6b35;
+  color: #1a1a2e;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 24px;
+  margin-right: 10px;
+  font-weight: bold;
+  font-size: 14px;
+}
