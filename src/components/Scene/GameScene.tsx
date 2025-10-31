@@ -2,11 +2,14 @@ import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stats } from '@react-three/drei';
 import Lighting from './Lighting';
-import TestCube from './TestCube';
+import Character from './Character';
+import Environment from './Environment';
+import LoadingScreen from './LoadingScreen';
 
 export default function GameScene() {
   return (
     <>
+      <LoadingScreen />
       <Canvas
         shadows
         camera={{ position: [5, 2, 5], fov: 50 }}
@@ -16,7 +19,8 @@ export default function GameScene() {
         <Lighting />
 
         <Suspense fallback={null}>
-          <TestCube />
+          <Environment position={[0, 0, 0]} />
+          <Character position={[0, 0, 0]} scale={1} />
         </Suspense>
 
         <OrbitControls
@@ -26,7 +30,6 @@ export default function GameScene() {
           maxPolarAngle={Math.PI / 2}
         />
         <Stats />
-        <gridHelper args={[20, 20]} />
       </Canvas>
     </>
   );
