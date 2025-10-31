@@ -44,7 +44,8 @@ export default function PostFX() {
       const shader = VignetteShader as any;
       const vignettePass = new ShaderPass(shader);
       vignettePassRef.current = vignettePass;
-      vignettePass.uniforms["offset"].value = 0.1;
+      // Use 'eskil' style by increasing offset; otherwise keep subtle falloff
+      vignettePass.uniforms["offset"].value = vignette.eskil ? 1.0 : 0.1;
       vignettePass.uniforms["darkness"].value = Math.max(0, Math.min(1, vignette.opacity));
       composer.addPass(vignettePass);
     }
@@ -56,7 +57,7 @@ export default function PostFX() {
       bloomPassRef.current = null;
       vignettePassRef.current = null;
     };
-  }, [enabled, gl, scene, camera, size.width, size.height, bloom.enabled, bloom.intensity, bloom.smoothing, bloom.threshold, vignette.enabled, vignette.opacity]);
+  }, [enabled, gl, scene, camera, size.width, size.height, bloom.enabled, bloom.intensity, bloom.smoothing, bloom.threshold, vignette.enabled, vignette.opacity, vignette.eskil]);
 
   // Resize composer with viewport
   useEffect(() => {

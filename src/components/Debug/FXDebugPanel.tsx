@@ -184,6 +184,16 @@ export default function FXDebugPanel() {
         <input type="range" min={30} max={60} step={1} value={perf.targetFps} onChange={(e) => setPerf({ targetFps: Number(e.target.value) })} style={{ flex: 1 }} />
         <span>{perf.targetFps}</span>
       </div>
+      <div style={rowStyle}>
+        <label style={labelStyle}>Window</label>
+        <input type="range" min={30} max={120} step={1} value={perf.window} onChange={(e) => setPerf({ window: Number(e.target.value) })} style={{ flex: 1 }} />
+        <span>{perf.window}</span>
+      </div>
+      <div style={rowStyle}>
+        <label style={labelStyle}>Cooldown</label>
+        <input type="range" min={1} max={10} step={1} value={perf.cooldownSec} onChange={(e) => setPerf({ cooldownSec: Number(e.target.value) })} style={{ flex: 1 }} />
+        <span>{perf.cooldownSec}s</span>
+      </div>
     </div>
   );
 }
