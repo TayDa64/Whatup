@@ -172,6 +172,7 @@ export default function FXDebugPanel() {
           <option value="Cinematic">Cinematic</option>
           <option value="Neon">Neon</option>
           <option value="LowKey">LowKey</option>
+          <option value="Noir">Noir</option>
           <option value="Reset">Reset</option>
         </select>
       </div>

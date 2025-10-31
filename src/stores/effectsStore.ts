@@ -26,7 +26,7 @@ export type EffectsState = {
   setVignette: (p: Partial<EffectsState['vignette']>) => void;
   setToneMapping: (v: EffectsState['toneMapping']) => void;
   setExposure: (v: number) => void;
-  applyPreset: (preset: 'Cinematic' | 'Neon' | 'LowKey' | 'Reset') => void;
+  applyPreset: (preset: 'Cinematic' | 'Neon' | 'LowKey' | 'Noir' | 'Reset') => void;
   setPerf: (p: Partial<EffectsState['perf']>) => void;
 };
 
@@ -69,6 +69,14 @@ export const useEffectsStore = create<EffectsState>()((set) => ({
             vignette: { ...s.vignette, enabled: true, eskil: false, opacity: 0.5 },
             toneMapping: 'Cineon',
             exposure: 0.9,
+          };
+        case 'Noir':
+          return {
+            enabled: true,
+            bloom: { ...s.bloom, enabled: false, intensity: 0.1, threshold: 1.0, smoothing: 0.0 },
+            vignette: { ...s.vignette, enabled: true, eskil: true, opacity: 0.65 },
+            toneMapping: 'Linear',
+            exposure: 0.85,
           };
         case 'Reset':
         default:
