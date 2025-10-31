@@ -8,6 +8,7 @@ import LoadingScreen from './LoadingScreen';
 import SimpleRoom from './SimpleRoom';
 import PostFX from '../../systems/postprocessing/EffectComposer';
 import ToneMappingController from '../../systems/postprocessing/ToneMappingController';
+import PerformanceGuard from '../../systems/postprocessing/PerformanceGuard';
 
 export default function GameScene() {
   return (
@@ -15,6 +16,7 @@ export default function GameScene() {
       <LoadingScreen />
       <Canvas
         shadows
+        dpr={[1, 1.5]}
         camera={{ position: [5, 2, 5], fov: 50 }}
         style={{ width: '100vw', height: '100vh' }}
       >
@@ -43,6 +45,7 @@ export default function GameScene() {
         <Stats />
         <PostFX />
         <ToneMappingController />
+        <PerformanceGuard />
       </Canvas>
     </>
   );

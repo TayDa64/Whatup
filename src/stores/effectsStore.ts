@@ -15,12 +15,19 @@ export type EffectsState = {
   };
   toneMapping: 'None' | 'Linear' | 'Reinhard' | 'Cineon' | 'ACES';
   exposure: number; // 0.1 - 2.0
+  perf: {
+    auto: boolean;       // auto-manage FX based on frame time
+    targetFps: number;   // 30 - 60
+    window: number;      // frames window for average, 30 - 120
+    cooldownSec: number; // time before attempting to re-enable
+  };
   setEnabled: (v: boolean) => void;
   setBloom: (p: Partial<EffectsState['bloom']>) => void;
   setVignette: (p: Partial<EffectsState['vignette']>) => void;
   setToneMapping: (v: EffectsState['toneMapping']) => void;
   setExposure: (v: number) => void;
   applyPreset: (preset: 'Cinematic' | 'Neon' | 'LowKey' | 'Reset') => void;
+  setPerf: (p: Partial<EffectsState['perf']>) => void;
 };
 
 export const useEffectsStore = create<EffectsState>()((set) => ({
@@ -29,11 +36,13 @@ export const useEffectsStore = create<EffectsState>()((set) => ({
   vignette: { enabled: true, eskil: false, opacity: 0.3 },
   toneMapping: 'ACES',
   exposure: 1.0,
+  perf: { auto: true, targetFps: 55, window: 60, cooldownSec: 5 },
   setEnabled: (v) => set({ enabled: v }),
   setBloom: (p) => set((s) => ({ bloom: { ...s.bloom, ...p } })),
   setVignette: (p) => set((s) => ({ vignette: { ...s.vignette, ...p } })),
   setToneMapping: (v) => set({ toneMapping: v }),
   setExposure: (v) => set({ exposure: v }),
+  setPerf: (p) => set((s) => ({ perf: { ...s.perf, ...p } })),
   applyPreset: (preset) =>
     set((s) => {
       switch (preset) {

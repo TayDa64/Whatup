@@ -22,7 +22,7 @@ const sectionTitleStyle: React.CSSProperties = { margin: '10px 0 6px', fontWeigh
 
 export default function FXDebugPanel() {
   const [visible, setVisible] = useState<boolean>(true);
-  const { enabled, setEnabled, bloom, setBloom, vignette, setVignette, toneMapping, setToneMapping, exposure, setExposure, applyPreset } = useEffectsStore();
+  const { enabled, setEnabled, bloom, setBloom, vignette, setVignette, toneMapping, setToneMapping, exposure, setExposure, applyPreset, perf, setPerf } = useEffectsStore();
 
   // Keyboard toggle (F9)
   useEffect(() => {
@@ -172,6 +172,17 @@ export default function FXDebugPanel() {
           <option value="LowKey">LowKey</option>
           <option value="Reset">Reset</option>
         </select>
+      </div>
+
+      <div style={sectionTitleStyle}>Performance</div>
+      <div style={rowStyle}>
+        <label style={labelStyle}>Auto FX</label>
+        <input type="checkbox" checked={perf.auto} onChange={(e) => setPerf({ auto: e.target.checked })} />
+      </div>
+      <div style={rowStyle}>
+        <label style={labelStyle}>Target FPS</label>
+        <input type="range" min={30} max={60} step={1} value={perf.targetFps} onChange={(e) => setPerf({ targetFps: Number(e.target.value) })} style={{ flex: 1 }} />
+        <span>{perf.targetFps}</span>
       </div>
     </div>
   );
