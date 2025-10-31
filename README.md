@@ -89,6 +89,7 @@ Inspired by Afterparty:
 	- Apply presets (Cinematic, Neon, LowKey, Reset)
 	- Enable Auto FX: the Performance Guard monitors FPS and temporarily disables/enables effects to keep frame time steady
 - Canvas DPR is capped to [1, 1.5] for stability on lower-end devices.
+	- Scene toggle: switch between the procedural bar interior and the GLB environment from the FX Debug panel.
 
 ## 📝 Contributing
 

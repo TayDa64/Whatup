@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useEffectsStore } from '../../stores/effectsStore';
+import { useSceneStore } from '../../stores/sceneStore';
 
 const panelStyle: React.CSSProperties = {
   position: 'fixed',
@@ -23,6 +24,7 @@ const sectionTitleStyle: React.CSSProperties = { margin: '10px 0 6px', fontWeigh
 export default function FXDebugPanel() {
   const [visible, setVisible] = useState<boolean>(true);
   const { enabled, setEnabled, bloom, setBloom, vignette, setVignette, toneMapping, setToneMapping, exposure, setExposure, applyPreset, perf, setPerf } = useEffectsStore();
+  const { useProceduralEnv, setUseProceduralEnv } = useSceneStore();
 
   // Keyboard toggle (F9)
   useEffect(() => {
@@ -193,6 +195,12 @@ export default function FXDebugPanel() {
         <label style={labelStyle}>Cooldown</label>
         <input type="range" min={1} max={10} step={1} value={perf.cooldownSec} onChange={(e) => setPerf({ cooldownSec: Number(e.target.value) })} style={{ flex: 1 }} />
         <span>{perf.cooldownSec}s</span>
+      </div>
+
+      <div style={sectionTitleStyle}>Scene</div>
+      <div style={rowStyle}>
+        <label style={labelStyle}>Procedural Env</label>
+        <input type="checkbox" checked={useProceduralEnv} onChange={(e) => setUseProceduralEnv(e.target.checked)} />
       </div>
     </div>
   );
