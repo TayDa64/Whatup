@@ -32,3 +32,13 @@ This project prefers open assets (CC0/CC‑BY). Here are safe options and how to
 - Keep GLB polygon counts modest (ideally < 100k) and use DRACO if available.
 - Baking ambient light into textures helps performance.
 - Prefer a few good props over heavy full interiors if you need speed.
+
+## Props-based setup (alternative)
+
+Without a single “bar interior” GLB, you can decorate the procedural room with CC0 props:
+
+1) Place GLBs in `public/models/props/` (e.g., from Kenney or Quaternius)
+2) Edit `public/models/props/layout.json` and list items:
+  - { "file": "table.glb", "position": [x,y,z], "rotation": [rx,ry,rz], "scale": 1 }
+3) Run the app; props will load into the procedural bar automatically.
+4) Keep polycounts small; prefer a handful of props.

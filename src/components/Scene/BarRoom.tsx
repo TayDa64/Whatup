@@ -1,5 +1,7 @@
 // Procedural bar interior using simple primitives. No external assets.
 
+import Props from './Props';
+
 export default function BarRoom() {
   return (
     <group>
@@ -82,6 +84,12 @@ export default function BarRoom() {
 
       {/* Warm overhead light over the bar */}
       <pointLight position={[-2, 3.5, -2]} intensity={1.6} distance={12} color="#ffcc88" castShadow />
+
+  {/* Optional props loaded from /public/models/props/layout.json */}
+  {/* Users can drop CC0/CC-BY GLBs (e.g., from Kenney/Quaternius) and define layout */}
+  <Props />
     </group>
   );
 }
+
+// (Props is small and tree-shakable; direct import is fine.)
