@@ -12,6 +12,7 @@ import ToneMappingController from '../../systems/postprocessing/ToneMappingContr
 import PerformanceGuard from '../../systems/postprocessing/PerformanceGuard';
 import RendererTuning from '../../systems/postprocessing/RendererTuning';
 import { useSceneStore } from '../../stores/sceneStore';
+import AutoEnvToggle from './AutoEnvToggle';
 
 export default function GameScene() {
   const useProceduralEnv = useSceneStore((s) => s.useProceduralEnv);
@@ -25,6 +26,8 @@ export default function GameScene() {
         camera={{ position: [5, 2, 5], fov: 50 }}
         style={{ width: '100vw', height: '100vh' }}
       >
+        {/* Auto-switch to GLB environment if available */}
+        <AutoEnvToggle />
         <color attach="background" args={["#1a1a2e"]} />
         <Lighting />
 
