@@ -79,6 +79,18 @@ Inspired by Afterparty:
 - Stylized low-poly or semi-realistic models
 - Dynamic lighting and bloom effects
 
+## 🧪 Runtime controls & FX debug
+
+- Press F9 to toggle the FX Debug panel (or use the small "FX ⚙️" button in the top-right).
+- From the panel you can:
+	- Toggle post-processing globally or per-effect (Bloom, Vignette)
+	- Change tone mapping operator (None/Linear/Reinhard/Cineon/ACES)
+	- Adjust exposure and bloom thresholds/intensity
+	- Apply presets (Cinematic, Neon, LowKey, Reset)
+	- Enable Auto FX: the Performance Guard monitors FPS and temporarily disables/enables effects to keep frame time steady
+- Canvas DPR is capped to [1, 1.5] for stability on lower-end devices.
+	- Scene toggle: switch between the procedural bar interior and the GLB environment from the FX Debug panel.
+
 ## 📝 Contributing
 
 See individual phase specs for detailed implementation guidelines. Follow conventional commit format:

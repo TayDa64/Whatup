@@ -1,17 +1,24 @@
 # Model Assets
 
 Place the following files in this directory:
-- `character.glb` (10-30k polys)
-- `environment.glb` (50-100k polys)
+- `character.glb` (10–30k polys)
+- `environment.glb` (50–100k polys)
 
-## Temporary Placeholders
+## Current placeholders
 
-For testing without assets, use these free models:
+- `character.glb` → Fox.glb (Khronos glTF Sample Models, CC BY 4.0)
+- `environment.glb` → DamagedHelmet.glb (temporary, CC BY 4.0)
 
-**Character:**
-https://models.readyplayer.me/[YOUR_AVATAR_ID].glb
+See `CREDITS.md` for attribution.
 
-**Environment:**
-https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Models@master/2.0/Sponza/glTF/Sponza.gltf
+Note: You can also use the built-in Procedural Bar environment. Toggle it at runtime in the FX Debug panel (F9) under the “Scene” section.
 
-Update the paths in `src/systems/assets/AssetLoader.ts` if you host assets elsewhere.
+## Replace with final environment
+
+Use a CC0/CC‑BY “bar interior” GLB if possible. Steps:
+1) Download the GLB file
+2) Save as `public/models/environment.glb`
+3) Update `public/models/CREDITS.md` with source and license
+4) In the FX Debug panel, uncheck “Procedural Env” to use the GLB
+
+If your asset host differs, you can adjust paths in `src/systems/assets/AssetLoader.ts`.
